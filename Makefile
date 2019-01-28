@@ -1,11 +1,20 @@
-.PHONY: all
+.PHONY: all clean run
 
-all: Makefile dvd.com
+all: Makefile dvd.com floppy.img
 
-run: Makefile all
+clean:
+	rm dvd.com dvd.list floppy.img floppy.list logo.s
+
+run: Makefile dvd.com
 	dosbox dvd.com
 
-dvd.com dvd.list: Makefile main.s logo.s rle.s
+run-floppy: Makefile floppy.img
+	qemu-system-i386 -boot a -fda floppy.img
+
+floppy.img floppy.list: Makefile main.s logo.s
+	nasm -f bin main.s -o floppy.img -l floppy.list -D FLOPPY
+
+dvd.com dvd.list: Makefile main.s logo.s
 	nasm -f bin main.s -o dvd.com -l dvd.list
 	wc -c dvd.com
 

@@ -1,11 +1,17 @@
 ; vim:ft=nasm
 
-org 0x100
+bits 16
+
+%ifdef FLOPPY
+org 0x7c00
+%else
+org 0x0100
+%endif
 
 init:
     ; we have to start off going backward so it doesn't cause problems with the collision code
-    xor al, al ; position.x
-    xor bl, bl ; position.y
+    xor ax, ax ; position.x
+    xor bx, bx ; position.y
     mov cl, -1 ; direction.x
     mov dl, -1 ; direction.y
     pusha      ; save all values to stack
@@ -13,8 +19,7 @@ init:
 main_loop:
 
 reset:
-    ; ax is still 0 from xor'ing earlier
-    mov al, 0x11
+    mov ax, 0x0011
     int 0x10
 
 movelogo:
@@ -79,3 +84,10 @@ jmp main_loop
 logo:
 %include "logo.s"
 logo_size equ $ - logo
+
+%ifdef FLOPPY
+; padding to 512
+times 510 - ($ - $$) db 0
+; boot signature
+dw 0xaa55
+%endif
