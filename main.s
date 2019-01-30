@@ -12,98 +12,94 @@ init:
     ; we have to start off going backward so it doesn't cause problems with the collision code
     xor ax, ax ; position.x
     xor bx, bx ; position.y
-    mov cl, -1 ; direction.x
-    mov dl, -1 ; direction.y
+    mov cx, -1 ; direction.x
+    mov dx, -1 ; direction.y
     pusha      ; save all values to stack
 
-main_loop:
-
-reset:
+    ; set video mode
     mov ax, 0x0011
     int 0x10
-
-	mov ax, 0x13
-	int 0x10 ; set graphics video mode
+main_loop:
 
 movelogo:
     popa
 
-    cmp al, 0
+    cmp ax, 0
     je .flip_x
-    cmp al, 640 / 8 - 8
+    cmp ax, 640 - logo_width
     je .flip_x
 
     jmp .noflip_x
     .flip_x:
-    neg cl
+    neg cx
     .noflip_x:
 
     ; `cmp bl, 0` is 3 bytes, this is only 2
     inc bx
     dec bx
     je .flip_y
-    cmp bl, (480 - logo_size / 8) / 8
+    cmp bx, 480 - logo_height
     je .flip_y
 
     jmp .noflip_y
     .flip_y:
-    neg dl
+    neg dx
     .noflip_y:
 
     ; add direction to positions
-    add al, cl
-    add bl, dl
+    add ax, cx
+    add bx, dx
 
     pusha
 
 drawlogo:
-	mov si, logo ; i
-	xor cx, cx ; n
-	mov dl, 15 ; cur color
-	xor ax, ax ; x
-	xor bx, bx ; y
-	; width is an equ already defined
+    mov si, logo ; i
+    xor cx, cx ; n
+    mov dl, 1  ; current color
+    xor ax, ax ; x
+    xor bx, bx ; y
+    ; width is an equ already defined
 
-	push cx
+    push cx
 
-drawloop: 
-	pop cx
-	shr cx, 5 ; discard the chunk we just used
-	cmp cx, 100000b ; check if we're out of data
-	jge _drawloop
-	cmp si, logo_end
-	je sleep
-	mov cx, [si] ; load the next 2 bytes of data
-	add si, 2 
+drawloop:
+    pop cx
+    shr cx, 5 ; discard the chunk we just used
+    cmp cx, 0b0100000 ; check if we're out of data
+    jge _drawloop
+    cmp si, logo_end
+    je drawloop_end
+    mov cx, [si] ; load the next 2 bytes of data
+    add si, 2
 _drawloop:
-	push ecx
-	and cl, 11111b ; we only care about the lowest 6 bit chunk
-	xor dl, 15 ; invert the color
-	drawrun:
-		dec cl ; check if the run's done and if not decrement it 
-		jl drawloop
-		
-		pusha
-		mov cx, ax ; column
-		mov al, dl ; color
-		mov dx, bx ; row
-		mov ah, 0xc ; draw pixel
-		int 0x10
-		popa
+    push cx
+    and cl, 0b0011111 ; we only care about the lowest 6 bit chunk
+    xor dl, 1 ; invert the color
+    drawrun:
+        dec cl ; check if the run's done and if not decrement it
+        jl drawloop
 
-		; if we're at the end of the row loop back
-		inc ax
-		cmp ax, logo_width
-		jl drawrun
-		xor ax, ax
-		inc bx
-		jmp drawrun
+        pusha
+        mov cx, ax ; column
+        mov al, dl ; color
+        mov dx, bx ; row
+        mov ah, 0x0c ; draw pixel
+        add cx, [esp + 32]
+        add dx, [esp + 26]
+        int 0x10
+        popa
 
-sleep:
-    mov ah, 0x86 ; wait interrupt
-    mov cl, 0x09 ; low byte of high word of wait time
-    xor dx, dx   ; low word of wait time
-    int 0x15     ; execute interrupt
+        ; if we're at the end of the row loop back
+        inc ax
+        cmp ax, logo_width
+        jl drawrun
+        xor ax, ax
+        inc bx
+        jmp drawrun
+
+    ; we're done with this
+    pop cx
+drawloop_end:
 
 jmp main_loop
 

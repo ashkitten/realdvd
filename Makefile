@@ -8,8 +8,8 @@ clean:
 run: Makefile dvd.com
 	dosbox dvd.com
 
-run-floppy: Makefile floppy.img
-	qemu-system-i386 -boot a -fda floppy.img
+run-qemu: Makefile floppy.img
+	qemu-system-i386 -hda floppy.img
 
 floppy.img floppy.list: Makefile main.s logo.s
 	nasm -f bin main.s -o floppy.img -l floppy.list -D FLOPPY
