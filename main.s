@@ -22,6 +22,9 @@ reset:
     mov ax, 0x0011
     int 0x10
 
+	mov ax, 0x13
+	int 0x10 ; set graphics video mode
+
 movelogo:
     popa
 
@@ -51,27 +54,51 @@ movelogo:
     add al, cl
     add bl, dl
 
-    ; set position in framebuffer
-    mov di, ax
-    imul si, bx, 640 / 8 * 8
-    add di, si
-
     pusha
 
 drawlogo:
-    mov si, logo
+	mov si, logo ; i
+	xor ecx, ecx ; n
+	mov dl, 15 ; cur color
+	xor ax, ax ; x
+	xor bx, bx ; y
+	; width is an equ already defined
 
-    mov ax, 0xa000
-    mov es, ax
-    pop di
-    push di
+	push ecx
 
-    .drawline:
-        mov cl, 8
-        rep movsb
-        add di, 640 / 8 - 8
-        cmp si, logo + logo_size ; end of logo
-        jl .drawline
+drawloop: 
+	pop ecx
+	shr ecx, 6 ; discard the chunk we just used
+	cmp ecx, 0x100 ; check if we're out of data
+	jge _drawloop
+	cmp si, logo_end
+	je sleep
+	mov ecx, [si] ; load the next 3 bytes of data
+	add si, 3
+	or ecx, 0xff000000 ; set a new sentinel in the highest byte to tell us when we're out
+_drawloop:
+	push ecx
+	and cl, 111111b ; we only care about the lowest 6 bit chunk
+	xor dl, 15 ; invert the color
+	drawrun:
+		dec cl ; check if the run's done and if not decrement it 
+		jl drawloop
+		
+		pusha
+		mov cx, ax ; column
+		mov al, dl ; color
+		mov dx, bx ; row
+		mov ah, 0xc ; draw pixel
+		int 0x10
+		popa
+
+		; if we're at the end of the row loop back
+		inc ax
+		cmp ax, logo_width
+		jl drawrun
+		xor ax, ax
+		inc bx
+		jmp drawrun
 
 sleep:
     mov ah, 0x86 ; wait interrupt
@@ -84,6 +111,7 @@ jmp main_loop
 logo:
 %include "logo.s"
 logo_size equ $ - logo
+logo_end equ $
 
 %ifdef FLOPPY
 ; padding to 512

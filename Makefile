@@ -18,5 +18,8 @@ dvd.com dvd.list: Makefile main.s logo.s
 	nasm -f bin main.s -o dvd.com -l dvd.list
 	wc -c dvd.com
 
-logo.s: Makefile logogen.pl logo.ascii
-	cat logo.ascii | perl -n logogen.pl > logo.s
+logo.s: Makefile rle.py logo.ascii
+	python rle.py > logo.s
+
+#logo.s: Makefile logogen.pl logo.ascii
+#	cat logo.ascii | perl -n logogen.pl > logo.s
