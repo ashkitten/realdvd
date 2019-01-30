@@ -58,27 +58,26 @@ movelogo:
 
 drawlogo:
 	mov si, logo ; i
-	xor ecx, ecx ; n
+	xor cx, cx ; n
 	mov dl, 15 ; cur color
 	xor ax, ax ; x
 	xor bx, bx ; y
 	; width is an equ already defined
 
-	push ecx
+	push cx
 
 drawloop: 
-	pop ecx
-	shr ecx, 6 ; discard the chunk we just used
-	cmp ecx, 0x100 ; check if we're out of data
+	pop cx
+	shr cx, 5 ; discard the chunk we just used
+	cmp cx, 100000b ; check if we're out of data
 	jge _drawloop
 	cmp si, logo_end
 	je sleep
-	mov ecx, [si] ; load the next 3 bytes of data
-	add si, 3
-	or ecx, 0xff000000 ; set a new sentinel in the highest byte to tell us when we're out
+	mov cx, [si] ; load the next 2 bytes of data
+	add si, 2 
 _drawloop:
 	push ecx
-	and cl, 111111b ; we only care about the lowest 6 bit chunk
+	and cl, 11111b ; we only care about the lowest 6 bit chunk
 	xor dl, 15 ; invert the color
 	drawrun:
 		dec cl ; check if the run's done and if not decrement it 

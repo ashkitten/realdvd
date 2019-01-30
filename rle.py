@@ -3,7 +3,7 @@ def rle():
         logo = fp.read().split("\n")[:-1]
     
     # simple row based rle
-    bits = 6
+    bits = 5 
     cur = "."
     run = 0
     buf = list()
@@ -36,11 +36,10 @@ def rle():
             ret += [0]
         yield ret
     
-    # take every 4 6 bit numbers and turn them into 3 8 bit numbers
     buf2 = list()
-    for b in chunks(buf, 4):
-        i = b[0] | b[1] << 6 | b[2] << 12 | b[3] << 18
-        buf2 += [i & 0xff, i >> 8 & 0xff, i >> 16]
+    for b in chunks(buf, 3):
+        i = b[0] | b[1] << 5 | b[2] << 10 | 1 << 15
+        buf2 += [i & 0xff, i >> 8 & 0xff]
 
     return (len(logo[0]), len(logo), buf2)
     
