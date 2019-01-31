@@ -9,9 +9,27 @@ org 0x0100
 %endif
 
 init:
+    %ifdef FLOPPY
+    ; pad because some bioses will overwrite with drive geometry
+    times 50 nop
+
+    ; can't depend on the bios to clear regs
+    xor ax, ax
+    xor bx, bx
+    xor cx, cx
+    xor dx, dx
+    xor si, si
+    xor di, di
+
+    ; setup segment registers
+    mov ds, ax ; ds = 0
+    mov ss, ax ; ss = 0
+
+    ; setup stack pointer
+    mov sp, 0xffff
+    %endif
+
     ; we have to start off going backward so it doesn't cause problems with the collision code
-    xor ax, ax ; position.x
-    xor bx, bx ; position.y
     mov cx, -1 ; direction.x
     mov dx, -1 ; direction.y
     pusha      ; save all values to stack
@@ -83,8 +101,10 @@ _drawloop:
 
         pusha
         mov ah, 0x0c ; draw pixel
-        add cx, [esp + 32]
-        add dx, [esp + 26]
+        mov bx, sp
+        add cx, word [bx + 32]
+        add dx, word [bx + 26]
+        xor bx, bx
         int 0x10
         popa
 
