@@ -42,7 +42,8 @@ main_loop:
 movelogo:
     popa
 
-    cmp ax, 0
+	inc ax
+	dec ax
     je .flip_x
     cmp ax, 640 - logo_width
     je .flip_x
@@ -72,35 +73,33 @@ movelogo:
 
 drawlogo:
     mov si, logo ; i
-    xor cx, cx ; n
-    mov dl, 1  ; current color
-    xor ax, ax ; x
-    xor bx, bx ; y
+    xor bx, bx ; n
+    mov ax, 1  ; current color
+    xor cx, cx ; x
+    xor dx, dx ; y
     ; width is an equ already defined
 
-    push cx
+    push bx 
 
 drawloop:
-    pop cx
-    shr cx, 5 ; discard the chunk we just used
-    cmp cx, 0b0100000 ; check if we're out of data
+    pop bx
+    shr bx, 5 ; discard the chunk we just used
+    cmp bx, 0b0100000 ; check if we're out of data
     jge _drawloop
     cmp si, logo_end
-    je drawloop_end
-    mov cx, [si] ; load the next 2 bytes of data
-    add si, 2
+    je main_loop 
+    mov bx, [si] ; load the next 2 bytes of data
+	inc si
+	inc si
 _drawloop:
-    push cx
-    and cl, 0b0011111 ; we only care about the lowest 6 bit chunk
-    xor dl, 1 ; invert the color
+    push bx
+    and bx, 0b0011111 ; we only care about the lowest 6 bit chunk
+    xor al, 1 ; invert the color
     drawrun:
-        dec cl ; check if the run's done and if not decrement it
+        dec bx ; check if the run's done and if not decrement it
         jl drawloop
 
         pusha
-        mov cx, ax ; column
-        mov al, dl ; color
-        mov dx, bx ; row
         mov ah, 0x0c ; draw pixel
         mov bx, sp
         add cx, word [bx + 32]
@@ -110,18 +109,12 @@ _drawloop:
         popa
 
         ; if we're at the end of the row loop back
-        inc ax
-        cmp ax, logo_width
+        inc cx
+        cmp cx, logo_width
         jl drawrun
-        xor ax, ax
-        inc bx
+        xor cx, cx
+        inc dx 
         jmp drawrun
-
-    ; we're done with this
-    pop cx
-drawloop_end:
-
-jmp main_loop
 
 logo:
 %include "logo.s"
