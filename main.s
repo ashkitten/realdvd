@@ -16,8 +16,6 @@ init:
     ; can't depend on the bios to clear regs
     xor ax, ax
     xor bx, bx
-    xor cx, cx
-    xor dx, dx
     xor si, si
     xor di, di
 
