@@ -33,12 +33,20 @@ init:
     pusha      ; save all values to stack
 
     ; set video mode
+    %ifndef NOCOLOR
+    mov ax, 0x4f02
+    mov bx, 0x0101
+    %else
     mov ax, 0x0011
+    %endif
     int 0x10
 main_loop:
 
 movelogo:
     popa
+
+    xor si, si
+    mov di, cur_color
 
     inc ax
     dec ax
@@ -49,6 +57,7 @@ movelogo:
     jmp .noflip_x
     .flip_x:
     neg cx
+    inc si
     .noflip_x:
 
     ; `cmp bl, 0` is 3 bytes, this is only 2
@@ -61,6 +70,7 @@ movelogo:
     jmp .noflip_y
     .flip_y:
     neg dx
+    inc si
     .noflip_y:
 
     ; add direction to positions
@@ -69,10 +79,18 @@ movelogo:
 
     pusha
 
+changecolors:
+    mov ax, si
+    add byte [di], al
+    and byte [di], 0x0f
+    jnz .skip
+    mov byte [di], 0x09
+    .skip:
+
 drawlogo:
     mov si, logo ; i
     xor bx, bx ; n
-    mov ax, 1  ; current color
+    mov ax, [di] ; current color (cur_color address is stored in di)
     xor cx, cx ; x
     xor dx, dx ; y
     ; width is an equ already defined
@@ -92,7 +110,7 @@ drawloop:
 _drawloop:
     push bx
     and bx, 0b0011111 ; we only care about the lowest 6 bit chunk
-    xor al, 1 ; invert the color
+    xor ax, [di] ; invert the color
     drawrun:
         dec bx ; check if the run's done and if not decrement it
         jl drawloop
@@ -118,6 +136,8 @@ logo:
 %include "logo.s"
 logo_size equ $ - logo
 logo_end equ $
+
+cur_color db 13 ; 13 + 2 for initial collisions is 15 (white)
 
 %ifdef FLOPPY
 ; padding to 512
