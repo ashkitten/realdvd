@@ -40,8 +40,8 @@ main_loop:
 movelogo:
     popa
 
-	inc ax
-	dec ax
+    inc ax
+    dec ax
     je .flip_x
     cmp ax, 640 - logo_width
     je .flip_x
@@ -77,7 +77,7 @@ drawlogo:
     xor dx, dx ; y
     ; width is an equ already defined
 
-    push bx 
+    push bx
 
 drawloop:
     pop bx
@@ -85,10 +85,10 @@ drawloop:
     cmp bx, 0b0100000 ; check if we're out of data
     jge _drawloop
     cmp si, logo_end
-    je main_loop 
+    je main_loop
     mov bx, [si] ; load the next 2 bytes of data
-	inc si
-	inc si
+    inc si
+    inc si
 _drawloop:
     push bx
     and bx, 0b0011111 ; we only care about the lowest 6 bit chunk
@@ -111,7 +111,7 @@ _drawloop:
         cmp cx, logo_width
         jl drawrun
         xor cx, cx
-        inc dx 
+        inc dx
         jmp drawrun
 
 logo:
