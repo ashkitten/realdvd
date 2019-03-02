@@ -82,9 +82,9 @@ movelogo:
 changecolors:
     mov ax, si
     add byte [di], al
-    and byte [di], 0x0f
-    jnz .skip
-    mov byte [di], 0x09
+    cmp byte [di], 14
+    jle .skip
+    mov byte [di], 9
     .skip:
 
 drawlogo:
