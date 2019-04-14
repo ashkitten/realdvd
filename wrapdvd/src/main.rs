@@ -73,11 +73,12 @@ fn main() {
                         *pixel_count += 1;
                         if *pixel_count == LOGO_WIDTH * LOGO_HEIGHT {
                             *pixel_count = 0;
+                            canvas.present();
+
                             if frame_start.elapsed() < FRAME_TIME {
                                 thread::sleep(FRAME_TIME - frame_start.elapsed());
-                                *frame_start = Instant::now();
                             }
-                            canvas.present();
+                            *frame_start = Instant::now();
                         }
 
                         for event in event_pump.poll_iter() {
@@ -108,6 +109,7 @@ fn main() {
         }
     })
     .unwrap();
-    emu.mem_write(0x100, include_bytes!("../../dvd.com")).unwrap();
+    emu.mem_write(0x100, include_bytes!("../../dvd.com"))
+        .unwrap();
     emu.emu_start(0x100, 0, 0, 0).unwrap();
 }
