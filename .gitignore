@@ -4,3 +4,4 @@ dvd.list
 floppy.img
 floppy.list
 logo.s
+__pycache__/

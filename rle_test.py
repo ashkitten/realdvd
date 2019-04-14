@@ -7,7 +7,7 @@ x = 0
 y = 0
 i = 0
 n = 0
-cur = 1 
+cur = 1
 while True:
     n = n >> 5
     if n < 0b100000:

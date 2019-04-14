@@ -9,7 +9,7 @@ use unicorn::{Cpu, CpuX86, Mode, Protection, RegisterX86};
 const WINDOW_WIDTH: u32 = 640;
 const WINDOW_HEIGHT: u32 = 480;
 const LOGO_WIDTH: usize = 64;
-const LOGO_HEIGHT: usize = 32;
+const LOGO_HEIGHT: usize = 31;
 const FRAME_TIME: Duration = Duration::from_millis(1000 / 30);
 
 const VGA_PALETTE: [(u8, u8, u8); 16] = [

@@ -19,9 +19,7 @@ def rle():
                 buf += [2 ** bits - 1]
                 buf += [0]
                 run = run - 2 ** bits + 1
-    # we don't need to append the last run if it's a run of 0's
-    if cur != ".":
-        buf += [run]
+    buf += [run]
 
     # iterator to split off the data into chunks
     def chunks(l, n):
